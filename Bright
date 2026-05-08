@@ -1,10 +1,11 @@
 -- ╔══════════════════════════════════════════════════════════════╗
--- ║        🌸 LightingConfigurator v3.0 — Kawaii Edition 🌸      ║
+-- ║        🌸 LightingConfigurator v3.4 — Kawaii Edition 🌸      ║
 -- ║     Configurador Avançado de Lighting para Roblox Studio     ║
--- ║   Technology: Future ✨ | Exposure: Day/Night 🌅🌙 | Auto 🔄  ║
+-- ║  Technology: Future ✨ | Zero Sombras 🚫🌑 | Luz Total 💡   ║
+-- ║     🔒 Anti-Tamper Total: Propriedades + Classes + Filhos    ║
 -- ╚══════════════════════════════════════════════════════════════╝
 
-local Lighting  = game:GetService("Lighting")
+local Lighting   = game:GetService("Lighting")
 local RunService = game:GetService("RunService")
 
 -- ╔══════════════════════════════════════════════════════════════╗
@@ -16,8 +17,8 @@ local configBright = {
 	-- ┌─────────────────────────────────────────┐
 	-- │        🎨 Cores de Ambiente              │
 	-- └─────────────────────────────────────────┘
-	Ambient           = Color3.fromRGB(166,166,166),
-	OutdoorAmbient    = Color3.fromRGB(166,166,166),
+	Ambient           = Color3.fromRGB(166, 166, 166),
+	OutdoorAmbient    = Color3.fromRGB(166, 166, 166),
 	ColorShift_Bottom = Color3.fromRGB(0, 0, 0),
 	ColorShift_Top    = Color3.fromRGB(0, 0, 0),
 
@@ -25,20 +26,30 @@ local configBright = {
 	-- │        💡 Intensidade de Iluminação      │
 	-- └─────────────────────────────────────────┘
 	Brightness               = 0.2,
-	EnvironmentSpecularScale = 0,
-	EnvironmentDiffuseScale  = 0,
+	EnvironmentSpecularScale = 0.0,
+	EnvironmentDiffuseScale  = 0.0,
 
-	-- ┌─────────────────────────────────────────┐
-	-- │        🌑 Sombras Globais                │
-	-- └─────────────────────────────────────────┘
-	GlobalShadows   = false,   -- 🔄 Controlado automaticamente pelo Day/Night
-	ShadowSoftness  = 0,
+	-- ┌──────────────────────────────────────────────────────┐
+	-- │   🚫🌑 SOMBRAS — TUDO DESATIVADO / ZERO SOMBRAS      │
+	-- │                                                      │
+	-- │  GlobalShadows  = false → Sombras globais OFF        │
+	-- │  ShadowSoftness = 0.0   → Sem suavização             │
+	-- │                                                      │
+	-- │  ⚠️  Partes com CastShadow = true serão              │
+	-- │      forçadas para FALSE automaticamente             │
+	-- │      em todo o Workspace via Heartbeat               │
+	-- └──────────────────────────────────────────────────────┘
+	GlobalShadows       = false,  -- 🚫 Sombras globais desativadas
+	ShadowSoftness      = 0.0,    -- 🚫 Sem suavização de sombra
+	ForcarSemSombra     = true,   -- 🔄 Força CastShadow=false em TUDO
+	SombrasOnDay        = false,  -- ☀️  Sem sombras durante o dia
+	SombrasOnNight      = false,  -- 🌙 Sem sombras durante a noite
 
 	-- ┌─────────────────────────────────────────┐
 	-- │        🌍 Geografia & Tecnologia         │
 	-- └─────────────────────────────────────────┘
 	GeographicLatitude = 0,
-	Technology         = Enum.Technology.Unified,
+	Technology         = Enum.Technology.Future,
 
 	-- ┌─────────────────────────────────────────┐
 	-- │        🌫️  Fog (desativado visualmente)  │
@@ -50,31 +61,47 @@ local configBright = {
 	-- ┌─────────────────────────────────────────┐
 	-- │        🌅 Exposure — Dia & Noite         │
 	-- └─────────────────────────────────────────┘
-	ExposureDay   = 0.3,   -- ☀️  Usado entre 6h e 18h
-	ExposureNight = 0.8,   -- 🌙 Usado entre 18h e 6h
+	ExposureDay    = 0.3,
+	ExposureNight  = 0.8,
+	DayStart       = 6,
+	NightStart     = 18,
 
-	DayStart   = 6,        -- ⏰ Hora que começa o dia
-	NightStart = 18,       -- ⏰ Hora que começa a noite
+	-- ┌─────────────────────────────────────────────────────────┐
+	-- │   🔒 Anti-Tamper — Classes Bloqueadas no Lighting       │
+	-- └─────────────────────────────────────────────────────────┘
+	AntiTamperAtivo = true,
+	BloqueioFilhos  = true,
+	LogarDeteccoes  = true,
 
-	ShadowsOnDay   = true,   -- ☀️  Sombras durante o dia?
-	ShadowsOnNight = false,  -- 🌙 Sombras durante a noite?
-
-	-- ┌─────────────────────────────────────────┐
-	-- │        🪟 Material SmoothPlastic         │
-	-- └─────────────────────────────────────────┘
-	SmoothPlasticTransparency = 0.75, -- 🪟 Transparência aplicada
+	ClassesBloqueadas = {
+		"Sky",
+		"Atmosphere",
+		"BloomEffect",
+		"SunRaysEffect",
+		"DepthOfFieldEffect",
+		"ColorCorrectionEffect",
+		"BlurEffect",
+		"SpecularEffect",
+		"BrightnessEffect",
+		"Script",
+		"LocalScript",
+		"ModuleScript",
+		"RemoteEvent",
+		"RemoteFunction",
+		"BindableEvent",
+		"BindableFunction",
+	},
 
 	-- ┌─────────────────────────────────────────┐
 	-- │        🔄 Heartbeat — Auto Refresh       │
 	-- └─────────────────────────────────────────┘
-	HeartbeatInterval = 1, -- ⏱️  Segundos entre cada atualização completa
+	HeartbeatInterval = 1,
 }
 -- ╚══════════════════════════════════════════════════════════════╝
 
 
 -- ════════════════════════════════════════════════════════════════
---  🧹 Limpar todos os filhos do Lighting (anti-lag)
---  Remove: Sky, Atmosphere, Bloom, SunRays, DepthOfField, etc.
+--  🧹 Limpar todos os filhos do Lighting (anti-lag inicial)
 -- ════════════════════════════════════════════════════════════════
 local function LimparLighting()
 	local removidos = 0
@@ -83,14 +110,16 @@ local function LimparLighting()
 		removidos += 1
 	end
 	if removidos > 0 then
-		print(string.format("  🧹 [Lighting] %d efeito(s) removido(s)! Bye bye lag~ 👋", removidos))
+		print(string.format(
+			"  🧹 [Lighting] %d efeito(s) removido(s)! Bye bye lag~ 👋",
+			removidos
+		))
 	end
 end
 
 
 -- ════════════════════════════════════════════════════════════════
 --  ⚙️  Aplicar todas as propriedades base do Lighting
---  Usa os valores definidos em configBright{}
 -- ════════════════════════════════════════════════════════════════
 local function ConfigurarLighting()
 	Lighting.Ambient                  = configBright.Ambient
@@ -100,8 +129,8 @@ local function ConfigurarLighting()
 	Lighting.Brightness               = configBright.Brightness
 	Lighting.EnvironmentSpecularScale = configBright.EnvironmentSpecularScale
 	Lighting.EnvironmentDiffuseScale  = configBright.EnvironmentDiffuseScale
-	Lighting.GlobalShadows            = configBright.GlobalShadows
-	Lighting.ShadowSoftness           = configBright.ShadowSoftness
+	Lighting.GlobalShadows            = configBright.GlobalShadows  -- 🚫 sempre false
+	Lighting.ShadowSoftness           = configBright.ShadowSoftness -- 🚫 sempre 0
 	Lighting.GeographicLatitude       = configBright.GeographicLatitude
 	Lighting.Technology               = configBright.Technology
 	Lighting.FogColor                 = configBright.FogColor
@@ -111,69 +140,219 @@ end
 
 
 -- ════════════════════════════════════════════════════════════════
---  ☀️  Exposure de DIA — aplicada entre DayStart e NightStart
+--  🚫🌑 FUNÇÃO: Remover TODAS as sombras do Workspace
+--
+--  Percorre todos os descendentes e força:
+--  → BasePart.CastShadow  = false  (peças não projetam sombra)
+--
+--  Isso garante que NENHUMA peça, modelo ou personagem
+--  projete ou receba qualquer tipo de sombra no jogo.
+-- ════════════════════════════════════════════════════════════════
+local totalSombrasRemovidas = 0
+
+local function RemoverTodasSombras()
+	if not configBright.ForcarSemSombra then return end
+
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("BasePart") then
+			if obj.CastShadow == true then
+				obj.CastShadow = false
+				totalSombrasRemovidas += 1
+			end
+		end
+	end
+end
+
+-- 🔔 Watcher: novas partes adicionadas ao Workspace também perdem sombra
+local function IniciarWatcherSombras()
+	if not configBright.ForcarSemSombra then return end
+
+	workspace.DescendantAdded:Connect(function(obj)
+		if obj:IsA("BasePart") then
+			task.defer(function()
+				if obj and obj.Parent then
+					obj.CastShadow = false
+				end
+			end)
+		end
+	end)
+
+	print("  🚫 [Sombras] Watcher ativo! Novas partes = sem sombra automático~ 🌑❌")
+end
+
+
+-- ════════════════════════════════════════════════════════════════
+--  ☀️  Exposure de DIA (sem sombras)
 -- ════════════════════════════════════════════════════════════════
 local function SetDayExposure()
 	Lighting.ExposureCompensation = configBright.ExposureDay
-	Lighting.GlobalShadows        = configBright.ShadowsOnDay
+	Lighting.GlobalShadows        = configBright.SombrasOnDay   -- 🚫 false
 end
 
 
 -- ════════════════════════════════════════════════════════════════
---  🌙 Exposure de NOITE — aplicada fora do intervalo diurno
+--  🌙 Exposure de NOITE (sem sombras)
 -- ════════════════════════════════════════════════════════════════
 local function SetNightExposure()
 	Lighting.ExposureCompensation = configBright.ExposureNight
-	Lighting.GlobalShadows        = configBright.ShadowsOnNight
+	Lighting.GlobalShadows        = configBright.SombrasOnNight  -- 🚫 false
 end
 
 
 -- ════════════════════════════════════════════════════════════════
---  🌅 Detectar ciclo atual e aplicar exposure correta
+--  🌅 Detectar ciclo e aplicar exposure correta
 -- ════════════════════════════════════════════════════════════════
 local periodoAtual = ""
 
 local function AtualizarExposure()
 	local hora = Lighting.ClockTime
+
 	if hora >= configBright.DayStart and hora < configBright.NightStart then
 		if periodoAtual ~= "dia" then
 			periodoAtual = "dia"
 			SetDayExposure()
-			print(string.format("  ☀️  [Exposure] DIA ativado! Exposure: %.1f | Sombras: %s ✨",
-				configBright.ExposureDay, tostring(configBright.ShadowsOnDay)))
+			print(string.format(
+				"  ☀️  [Exposure] DIA! Exposure: %.1f | Sombras: NENHUMA 🚫🌑",
+				configBright.ExposureDay
+			))
 		end
 	else
 		if periodoAtual ~= "noite" then
 			periodoAtual = "noite"
 			SetNightExposure()
-			print(string.format("  🌙 [Exposure] NOITE ativada! Exposure: %.1f | Sombras: %s 🌸",
-				configBright.ExposureNight, tostring(configBright.ShadowsOnNight)))
+			print(string.format(
+				"  🌙 [Exposure] NOITE! Exposure: %.1f | Sombras: NENHUMA 🚫🌑",
+				configBright.ExposureNight
+			))
 		end
 	end
 end
 
 
 -- ════════════════════════════════════════════════════════════════
---  🪟 Aplicar transparência em todos os SmoothPlastic do Workspace
+--  🔍 Verificar se uma classe é bloqueada
 -- ════════════════════════════════════════════════════════════════
-local function AplicarTransparencia()
-	local total = 0
-	for _, obj in ipairs(workspace:GetDescendants()) do
-		if obj:IsA("BasePart") and obj.Material == Enum.Material.SmoothPlastic then
-			obj.Transparency = configBright.SmoothPlasticTransparency
-			total += 1
+local function ClasseBloqueada(objeto)
+	for _, classe in ipairs(configBright.ClassesBloqueadas) do
+		if objeto:IsA(classe) then
+			return true, classe
 		end
 	end
-	if total > 0 then
-		print(string.format("  🪟 [Workspace] %d parte(s) SmoothPlastic → Transparency %.2f 💎",
-			total, configBright.SmoothPlasticTransparency))
+	if objeto:IsA("PostEffect") then return true, "PostEffect (genérico)" end
+	if objeto:IsA("Sky")        then return true, "Sky"                   end
+	if objeto:IsA("Atmosphere") then return true, "Atmosphere"            end
+	return false, nil
+end
+
+
+-- ════════════════════════════════════════════════════════════════
+--  🔒 Detectar e bloquear propriedades alteradas
+-- ════════════════════════════════════════════════════════════════
+local propriedadesProtegidas = {
+	{ prop = "Ambient",                  chave = "Ambient" },
+	{ prop = "OutdoorAmbient",           chave = "OutdoorAmbient" },
+	{ prop = "ColorShift_Bottom",        chave = "ColorShift_Bottom" },
+	{ prop = "ColorShift_Top",           chave = "ColorShift_Top" },
+	{ prop = "Brightness",               chave = "Brightness" },
+	{ prop = "EnvironmentSpecularScale", chave = "EnvironmentSpecularScale" },
+	{ prop = "EnvironmentDiffuseScale",  chave = "EnvironmentDiffuseScale" },
+	{ prop = "GlobalShadows",            chave = "GlobalShadows" },
+	{ prop = "ShadowSoftness",           chave = "ShadowSoftness" },
+	{ prop = "GeographicLatitude",       chave = "GeographicLatitude" },
+	{ prop = "FogColor",                 chave = "FogColor" },
+	{ prop = "FogStart",                 chave = "FogStart" },
+	{ prop = "FogEnd",                   chave = "FogEnd" },
+	{ prop = "Technology",               chave = "Technology" },
+}
+
+local function DetectarPropriedades()
+	if not configBright.AntiTamperAtivo then return end
+
+	for _, entrada in ipairs(propriedadesProtegidas) do
+		local valorAtual = Lighting[entrada.prop]
+		local valorCerto = configBright[entrada.chave]
+
+		if valorAtual ~= valorCerto then
+			Lighting[entrada.prop] = valorCerto
+
+			if configBright.LogarDeteccoes then
+				print(string.format(
+					"  🔒 [AntiTamper] ⚠️  '%s' alterada! Revertida! 🛡️",
+					entrada.prop
+				))
+			end
+		end
 	end
+end
+
+
+-- ════════════════════════════════════════════════════════════════
+--  🚫 Detectar e destruir filhos com classes bloqueadas
+-- ════════════════════════════════════════════════════════════════
+local function DetectarFilhos()
+	if not configBright.AntiTamperAtivo or not configBright.BloqueioFilhos then return end
+
+	for _, filho in ipairs(Lighting:GetChildren()) do
+		local bloqueado, classeDetectada = ClasseBloqueada(filho)
+		local nome   = filho.Name
+		local classe = filho.ClassName
+		filho:Destroy()
+
+		if configBright.LogarDeteccoes then
+			if bloqueado then
+				print(string.format(
+					"  🚫 [AntiTamper] Classe '%s' [%s] destruída! 💥",
+					nome, classeDetectada
+				))
+			else
+				print(string.format(
+					"  ⚠️  [AntiTamper] Objeto desconhecido '%s' [%s] removido! 🧹",
+					nome, classe
+				))
+			end
+		end
+	end
+end
+
+
+-- ════════════════════════════════════════════════════════════════
+--  🔔 Watcher de classes no Lighting (instantâneo)
+-- ════════════════════════════════════════════════════════════════
+local function IniciarWatcherFilhos()
+	if not configBright.AntiTamperAtivo or not configBright.BloqueioFilhos then return end
+
+	Lighting.ChildAdded:Connect(function(filho)
+		task.defer(function()
+			if not filho or filho.Parent ~= Lighting then return end
+
+			local bloqueado, classeDetectada = ClasseBloqueada(filho)
+			local nome   = filho.Name
+			local classe = filho.ClassName
+			filho:Destroy()
+
+			if configBright.LogarDeteccoes then
+				if bloqueado then
+					print(string.format(
+						"  🚫 [Watcher] ⚡ Classe proibida '%s' [%s] bloqueada! 💥🔒",
+						nome, classeDetectada
+					))
+				else
+					print(string.format(
+						"  ⚠️  [Watcher] ⚡ Suspeito '%s' [%s] interceptado! 🧹",
+						nome, classe
+					))
+				end
+			end
+		end)
+	end)
+
+	print("  🔔 [Watcher] Lighting blindado! Qualquer classe será destruída~ ⚡🛡️")
 end
 
 
 -- ════════════════════════════════════════════════════════════════
 --  🔄 HEARTBEAT — Atualização automática completa
---  Roda a cada HeartbeatInterval segundos e mantém tudo em sync
+--  ✅ Lighting  ✅ Exposure  ✅ AntiTamper  ✅ Zero Sombras
 -- ════════════════════════════════════════════════════════════════
 local function IniciarHeartbeat()
 	local acumulador = 0
@@ -184,14 +363,11 @@ local function IniciarHeartbeat()
 		if acumulador >= configBright.HeartbeatInterval then
 			acumulador = 0
 
-			-- 🔁 Reaplica propriedades base (garante consistência)
-			ConfigurarLighting()
-
-			-- 🌅 Atualiza exposure conforme o horário
-			AtualizarExposure()
-
-			-- 🪟 Reaplica transparência em partes novas
-			AplicarTransparencia()
+			ConfigurarLighting()    -- ⚙️  Propriedades base
+			AtualizarExposure()     -- 🌅 Ciclo dia/noite
+			DetectarPropriedades()  -- 🔒 Reverte alterações
+			DetectarFilhos()        -- 🚫 Remove classes bloqueadas
+			RemoverTodasSombras()   -- 🌑 Força CastShadow=false em tudo
 		end
 	end)
 
@@ -204,21 +380,31 @@ end
 --  🚀 INICIALIZAÇÃO — Execução principal
 -- ════════════════════════════════════════════════════════════════
 print("")
-print("  ╔════════════════════════════════════════╗")
-print("  ║  🌸 LightingConfigurator v3.0 Kawaii  ║")
-print("  ║         Iniciando o sistema~ (◕‿◕)     ║")
-print("  ╚════════════════════════════════════════╝")
+print("  ╔══════════════════════════════════════════════╗")
+print("  ║    🌸 LightingConfigurator v3.4 Kawaii      ║")
+print("  ║         Iniciando o sistema~ (◕‿◕) ✨        ║")
+print("  ╚══════════════════════════════════════════════╝")
 print("")
 
-LimparLighting()      -- 🧹 1. Remove lag
-ConfigurarLighting()  -- ⚙️  2. Aplica base
-AtualizarExposure()   -- 🌅 3. Exposure inicial
-AplicarTransparencia()-- 🪟 4. SmoothPlastic
-IniciarHeartbeat()    -- 🔄 5. Loop eterno
+LimparLighting()        -- 🧹 1. Remove lag inicial
+ConfigurarLighting()    -- ⚙️  2. Aplica base
+AtualizarExposure()     -- 🌅 3. Exposure inicial
+RemoverTodasSombras()   -- 🌑 4. Remove todas as sombras do Workspace
+IniciarWatcherSombras() -- 🚫 5. Watcher: novas partes sem sombra
+IniciarWatcherFilhos()  -- 🔔 6. Watcher: classes proibidas no Lighting
+IniciarHeartbeat()      -- 🔄 7. Loop eterno
 
 print("")
-print("  ╔════════════════════════════════════════╗")
-print("  ║  ✅ Sistema ATIVO! Technology: Future  ║")
-print("  ║    Tudo lindo e funcionando~ (ﾉ◕ヮ◕)ﾉ  ║")
-print("  ╚════════════════════════════════════════╝")
+print("  ╔══════════════════════════════════════════════╗")
+print("  ║    ✅ Sistema ATIVO! Technology: Future      ║")
+print("  ║    🎨 Ambient.........: 166,166,166 🌫️        ║")
+print("  ║    🌤️  OutdoorAmbient.: 166,166,166 ✨        ║")
+print("  ║    🚫 Sombras.........: ZERO 🌑❌             ║")
+print("  ║    💡 Iluminação......: TOTAL em tudo 🔆      ║")
+print("  ║    🔒 Propriedades....: PROTEGIDAS 🛡️         ║")
+print("  ║    🚫 Classes.........: BLOQUEADAS 💥         ║")
+print("  ║    🔔 Watchers........: ATIVOS ⚡             ║")
+print("  ║    🔄 Heartbeat.......: ATIVO 💓              ║")
+print("  ║      Blindado e iluminado~ (ﾉ◕ヮ◕)ﾉ*✨💡      ║")
+print("  ╚══════════════════════════════════════════════╝")
 print("")
