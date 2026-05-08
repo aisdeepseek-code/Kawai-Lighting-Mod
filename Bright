@@ -1,0 +1,224 @@
+-- ╔══════════════════════════════════════════════════════════════╗
+-- ║        🌸 LightingConfigurator v3.0 — Kawaii Edition 🌸      ║
+-- ║     Configurador Avançado de Lighting para Roblox Studio     ║
+-- ║   Technology: Future ✨ | Exposure: Day/Night 🌅🌙 | Auto 🔄  ║
+-- ╚══════════════════════════════════════════════════════════════╝
+
+local Lighting  = game:GetService("Lighting")
+local RunService = game:GetService("RunService")
+
+-- ╔══════════════════════════════════════════════════════════════╗
+-- ║                  🎀 CONFIG CENTRAL — configBright            ║
+-- ║          ✏️  Edite TUDO aqui! Não mexa no resto ~(˘▾˘)~      ║
+-- ╚══════════════════════════════════════════════════════════════╝
+local configBright = {
+
+	-- ┌─────────────────────────────────────────┐
+	-- │        🎨 Cores de Ambiente              │
+	-- └─────────────────────────────────────────┘
+	Ambient           = Color3.fromRGB(166,166,166),
+	OutdoorAmbient    = Color3.fromRGB(166,166,166),
+	ColorShift_Bottom = Color3.fromRGB(0, 0, 0),
+	ColorShift_Top    = Color3.fromRGB(0, 0, 0),
+
+	-- ┌─────────────────────────────────────────┐
+	-- │        💡 Intensidade de Iluminação      │
+	-- └─────────────────────────────────────────┘
+	Brightness               = 0.2,
+	EnvironmentSpecularScale = 0,
+	EnvironmentDiffuseScale  = 0,
+
+	-- ┌─────────────────────────────────────────┐
+	-- │        🌑 Sombras Globais                │
+	-- └─────────────────────────────────────────┘
+	GlobalShadows   = false,   -- 🔄 Controlado automaticamente pelo Day/Night
+	ShadowSoftness  = 0,
+
+	-- ┌─────────────────────────────────────────┐
+	-- │        🌍 Geografia & Tecnologia         │
+	-- └─────────────────────────────────────────┘
+	GeographicLatitude = 0,
+	Technology         = Enum.Technology.Unified,
+
+	-- ┌─────────────────────────────────────────┐
+	-- │        🌫️  Fog (desativado visualmente)  │
+	-- └─────────────────────────────────────────┘
+	FogColor = Color3.fromRGB(0, 0, 0),
+	FogStart = 100000,
+	FogEnd   = 100000,
+
+	-- ┌─────────────────────────────────────────┐
+	-- │        🌅 Exposure — Dia & Noite         │
+	-- └─────────────────────────────────────────┘
+	ExposureDay   = 0.3,   -- ☀️  Usado entre 6h e 18h
+	ExposureNight = 0.8,   -- 🌙 Usado entre 18h e 6h
+
+	DayStart   = 6,        -- ⏰ Hora que começa o dia
+	NightStart = 18,       -- ⏰ Hora que começa a noite
+
+	ShadowsOnDay   = true,   -- ☀️  Sombras durante o dia?
+	ShadowsOnNight = false,  -- 🌙 Sombras durante a noite?
+
+	-- ┌─────────────────────────────────────────┐
+	-- │        🪟 Material SmoothPlastic         │
+	-- └─────────────────────────────────────────┘
+	SmoothPlasticTransparency = 0.75, -- 🪟 Transparência aplicada
+
+	-- ┌─────────────────────────────────────────┐
+	-- │        🔄 Heartbeat — Auto Refresh       │
+	-- └─────────────────────────────────────────┘
+	HeartbeatInterval = 1, -- ⏱️  Segundos entre cada atualização completa
+}
+-- ╚══════════════════════════════════════════════════════════════╝
+
+
+-- ════════════════════════════════════════════════════════════════
+--  🧹 Limpar todos os filhos do Lighting (anti-lag)
+--  Remove: Sky, Atmosphere, Bloom, SunRays, DepthOfField, etc.
+-- ════════════════════════════════════════════════════════════════
+local function LimparLighting()
+	local removidos = 0
+	for _, filho in ipairs(Lighting:GetChildren()) do
+		filho:Destroy()
+		removidos += 1
+	end
+	if removidos > 0 then
+		print(string.format("  🧹 [Lighting] %d efeito(s) removido(s)! Bye bye lag~ 👋", removidos))
+	end
+end
+
+
+-- ════════════════════════════════════════════════════════════════
+--  ⚙️  Aplicar todas as propriedades base do Lighting
+--  Usa os valores definidos em configBright{}
+-- ════════════════════════════════════════════════════════════════
+local function ConfigurarLighting()
+	Lighting.Ambient                  = configBright.Ambient
+	Lighting.OutdoorAmbient           = configBright.OutdoorAmbient
+	Lighting.ColorShift_Bottom        = configBright.ColorShift_Bottom
+	Lighting.ColorShift_Top           = configBright.ColorShift_Top
+	Lighting.Brightness               = configBright.Brightness
+	Lighting.EnvironmentSpecularScale = configBright.EnvironmentSpecularScale
+	Lighting.EnvironmentDiffuseScale  = configBright.EnvironmentDiffuseScale
+	Lighting.GlobalShadows            = configBright.GlobalShadows
+	Lighting.ShadowSoftness           = configBright.ShadowSoftness
+	Lighting.GeographicLatitude       = configBright.GeographicLatitude
+	Lighting.Technology               = configBright.Technology
+	Lighting.FogColor                 = configBright.FogColor
+	Lighting.FogStart                 = configBright.FogStart
+	Lighting.FogEnd                   = configBright.FogEnd
+end
+
+
+-- ════════════════════════════════════════════════════════════════
+--  ☀️  Exposure de DIA — aplicada entre DayStart e NightStart
+-- ════════════════════════════════════════════════════════════════
+local function SetDayExposure()
+	Lighting.ExposureCompensation = configBright.ExposureDay
+	Lighting.GlobalShadows        = configBright.ShadowsOnDay
+end
+
+
+-- ════════════════════════════════════════════════════════════════
+--  🌙 Exposure de NOITE — aplicada fora do intervalo diurno
+-- ════════════════════════════════════════════════════════════════
+local function SetNightExposure()
+	Lighting.ExposureCompensation = configBright.ExposureNight
+	Lighting.GlobalShadows        = configBright.ShadowsOnNight
+end
+
+
+-- ════════════════════════════════════════════════════════════════
+--  🌅 Detectar ciclo atual e aplicar exposure correta
+-- ════════════════════════════════════════════════════════════════
+local periodoAtual = ""
+
+local function AtualizarExposure()
+	local hora = Lighting.ClockTime
+	if hora >= configBright.DayStart and hora < configBright.NightStart then
+		if periodoAtual ~= "dia" then
+			periodoAtual = "dia"
+			SetDayExposure()
+			print(string.format("  ☀️  [Exposure] DIA ativado! Exposure: %.1f | Sombras: %s ✨",
+				configBright.ExposureDay, tostring(configBright.ShadowsOnDay)))
+		end
+	else
+		if periodoAtual ~= "noite" then
+			periodoAtual = "noite"
+			SetNightExposure()
+			print(string.format("  🌙 [Exposure] NOITE ativada! Exposure: %.1f | Sombras: %s 🌸",
+				configBright.ExposureNight, tostring(configBright.ShadowsOnNight)))
+		end
+	end
+end
+
+
+-- ════════════════════════════════════════════════════════════════
+--  🪟 Aplicar transparência em todos os SmoothPlastic do Workspace
+-- ════════════════════════════════════════════════════════════════
+local function AplicarTransparencia()
+	local total = 0
+	for _, obj in ipairs(workspace:GetDescendants()) do
+		if obj:IsA("BasePart") and obj.Material == Enum.Material.SmoothPlastic then
+			obj.Transparency = configBright.SmoothPlasticTransparency
+			total += 1
+		end
+	end
+	if total > 0 then
+		print(string.format("  🪟 [Workspace] %d parte(s) SmoothPlastic → Transparency %.2f 💎",
+			total, configBright.SmoothPlasticTransparency))
+	end
+end
+
+
+-- ════════════════════════════════════════════════════════════════
+--  🔄 HEARTBEAT — Atualização automática completa
+--  Roda a cada HeartbeatInterval segundos e mantém tudo em sync
+-- ════════════════════════════════════════════════════════════════
+local function IniciarHeartbeat()
+	local acumulador = 0
+
+	RunService.Heartbeat:Connect(function(deltaTime)
+		acumulador += deltaTime
+
+		if acumulador >= configBright.HeartbeatInterval then
+			acumulador = 0
+
+			-- 🔁 Reaplica propriedades base (garante consistência)
+			ConfigurarLighting()
+
+			-- 🌅 Atualiza exposure conforme o horário
+			AtualizarExposure()
+
+			-- 🪟 Reaplica transparência em partes novas
+			AplicarTransparencia()
+		end
+	end)
+
+	print("  🔄 [Heartbeat] Loop ativo! Intervalo: "
+		.. configBright.HeartbeatInterval .. "s 💓")
+end
+
+
+-- ════════════════════════════════════════════════════════════════
+--  🚀 INICIALIZAÇÃO — Execução principal
+-- ════════════════════════════════════════════════════════════════
+print("")
+print("  ╔════════════════════════════════════════╗")
+print("  ║  🌸 LightingConfigurator v3.0 Kawaii  ║")
+print("  ║         Iniciando o sistema~ (◕‿◕)     ║")
+print("  ╚════════════════════════════════════════╝")
+print("")
+
+LimparLighting()      -- 🧹 1. Remove lag
+ConfigurarLighting()  -- ⚙️  2. Aplica base
+AtualizarExposure()   -- 🌅 3. Exposure inicial
+AplicarTransparencia()-- 🪟 4. SmoothPlastic
+IniciarHeartbeat()    -- 🔄 5. Loop eterno
+
+print("")
+print("  ╔════════════════════════════════════════╗")
+print("  ║  ✅ Sistema ATIVO! Technology: Future  ║")
+print("  ║    Tudo lindo e funcionando~ (ﾉ◕ヮ◕)ﾉ  ║")
+print("  ╚════════════════════════════════════════╝")
+print("")
